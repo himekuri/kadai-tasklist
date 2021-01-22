@@ -15,13 +15,19 @@ class TasksController extends Controller
      */
     public function index()
     {
-        // タスク一覧を取得
-        $tasks = Task::all();
-
-        // タスク一覧ビューでそれを表示
-        return view('tasks.index', [
-            'tasks' => $tasks,
-        ]);
+        if (\Auth::check()){
+            // 認証済みユーザを取得
+            $user = \Auth::user();
+            // タスク一覧を取得
+            $tasks = Task::all();
+    
+            // タスク一覧ビューでそれを表示
+            return view('tasks.index', [
+                'tasks' => $tasks,
+            ]);
+        }
+        
+        return view('tasks.index');
     }
 
     /**
@@ -55,11 +61,12 @@ class TasksController extends Controller
         
         // タスクを作成
         $task = new Task;
-        $task->content = $request->content;
-        $task->status = $request->status;
-        $task->save();
+        
+        $request->user()->tasks()->create([
+            'status'  => $request->status,
+            'content' => $request->content,
+        ]);
 
-        // トップページへリダイレクトさせる
         return redirect('/');
     }
 
@@ -73,11 +80,12 @@ class TasksController extends Controller
     {
          // idの値でタスクを検索して取得
         $task = Task::findOrFail($id);
-
-        // タスク詳細ビューでそれを表示
-        return view('tasks.show', [
-            'task' => $task,
-        ]);
+        
+        if (\Auth::id() === $task->user_id) {
+            return view('tasks.show', ['task' => $task,]);
+        }
+        
+        return redirect('/');
     }
 
     /**
@@ -91,10 +99,11 @@ class TasksController extends Controller
         // idの値でタスクを検索して取得
         $task = Task::findOrFail($id);
 
-        // タスク編集ビューでそれを表示
-        return view('tasks.edit', [
-            'task' => $task,
-        ]);
+        if (\Auth::id() === $task->user_id) {
+            return view('tasks.edit', ['task' => $task,]);
+        }
+        
+        return redirect('/');
     }
 
     /**
@@ -115,12 +124,12 @@ class TasksController extends Controller
         
         // idの値でタスクを検索して取得
         $task = Task::findOrFail($id);
-        // タスクを更新
-        $task->content = $request->content;
-        $task->status = $request->status;
-        $task->save();
-
-        // トップページへリダイレクトさせる
+        
+        if (\Auth::id() === $task->user_id) {
+            $task->status  = $request->status;
+            $task->content = $request->content;
+            $task->save();
+        }
         return redirect('/');
     }
 
@@ -134,10 +143,11 @@ class TasksController extends Controller
     {
         // idの値でタスクを検索して取得
         $task = Task::findOrFail($id);
-        // タスクを削除
-        $task->delete();
-
-        // トップページへリダイレクトさせる
+        
+        if (\Auth::id() === $micropost->user_id) {
+            $micropost->delete();
+        }
+        
         return redirect('/');
     }
 }
