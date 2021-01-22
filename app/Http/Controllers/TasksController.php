@@ -144,8 +144,8 @@ class TasksController extends Controller
         // idの値でタスクを検索して取得
         $task = Task::findOrFail($id);
         
-        if (\Auth::id() === $micropost->user_id) {
-            $micropost->delete();
+        if (\Auth::id() === $task->user_id) {
+            $task->delete();
         }
         
         return redirect('/');
