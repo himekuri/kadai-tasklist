@@ -15,20 +15,21 @@ class TasksController extends Controller
      */
     public function index()
     {
-        if (\Auth::check()){
-            // 認証済みユーザを取得
-            $user = \Auth::user();
-            // タスク一覧を取得
-            $tasks = $user->tasks()->orderBy('created_at', 'desc')->paginate(10);
-            
-    
-            // タスク一覧ビューでそれを表示
-            return view('tasks.index', [
-                'tasks' => $tasks,
-            ]);
+        // 未ログインの場合はwelcomeページを表示
+        if (!\Auth::check()){
+            return view('welcome');
         }
+
+        // 認証済みユーザを取得
+        $user = \Auth::user();
+        // タスク一覧を取得
+        $tasks = $user->tasks()->orderBy('created_at', 'desc')->paginate(10);
         
-        return view('tasks.index');
+        // タスク一覧ビューでそれを表示
+        return view('tasks.index', [
+            'tasks' => $tasks,
+        ]);
+        
     }
 
     /**
